@@ -210,6 +210,7 @@ footer { border-top: 1px solid var(--border); padding: 2rem 3rem; display: flex;
       <a href="#services" class="btn btn-outline">What We Build</a>
     </div>
   </div>
+  <canvas id="boltCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;"></canvas>
   <div class="hero-scroll">SCROLL</div>
 </section>
 
@@ -476,6 +477,59 @@ els.forEach(el => obs.observe(el));
   var href = 'mailto:' + u + '@' + d;
   document.getElementById('nav-cta').setAttribute('href', href);
   document.getElementById('footer-mail').setAttribute('href', href);
+})();
+
+// Lightning canvas
+(function() {
+  var canvas = document.getElementById('boltCanvas');
+  var ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function rand(min, max) { return Math.random() * (max - min) + min; }
+
+  function drawBolt(x1, y1, x2, y2, rough, depth, alpha) {
+    if (depth <= 0) return;
+    var mx = (x1 + x2) / 2 + (Math.random() - 0.5) * rough;
+    var my = (y1 + y2) / 2 + (Math.random() - 0.5) * rough;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(mx, my);
+    ctx.strokeStyle = 'rgba(240,224,64,' + alpha + ')';
+    ctx.lineWidth = depth * 1.4; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(x2, y2);
+    ctx.strokeStyle = 'rgba(240,224,64,' + (alpha * 0.75) + ')';
+    ctx.lineWidth = depth * 1.0; ctx.stroke();
+    drawBolt(x1, y1, mx, my, rough / 2, depth - 1, alpha * 0.85);
+    drawBolt(mx, my, x2, y2, rough / 2, depth - 1, alpha * 0.85);
+    if (depth > 2 && Math.random() > 0.55) {
+      var bx = mx + (Math.random() - 0.5) * 80;
+      var by = my + rand(30, 80);
+      drawBolt(mx, my, bx, by, rough / 3, depth - 2, alpha * 0.4);
+    }
+  }
+
+  var bolts = [], frame = 0;
+  function spawnBolt() {
+    bolts.push({ x: rand(canvas.width * 0.55, canvas.width * 0.95), age: 0, life: rand(6, 14) });
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    frame++;
+    if (frame % 45 === 0) spawnBolt();
+    bolts = bolts.filter(function(b) { return b.age < b.life; });
+    bolts.forEach(function(b) {
+      b.age++;
+      var alpha = (1 - b.age / b.life) * 0.65 + 0.1;
+      drawBolt(b.x, 0, b.x + rand(-80, 80), canvas.height * 0.75, 130, 5, alpha);
+    });
+  }
+  animate();
 })();
 </script>
 </body>
