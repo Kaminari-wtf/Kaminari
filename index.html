@@ -526,7 +526,7 @@ els.forEach(el => obs.observe(el));
     bolts.forEach(function(b) {
       b.age++;
       var alpha = (1 - b.age / b.life) * 0.65 + 0.1;
-      drawBolt(b.x, 0, b.x + rand(-80, 80), canvas.height * 0.75, 130, 5, alpha);
+      drawBolt(b.x, 0, b.x + rand(-80, 80), canvas.height * 0.98, 130, 5, alpha);
     });
   }
   animate();
